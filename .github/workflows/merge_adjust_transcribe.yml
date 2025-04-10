@@ -60,10 +60,10 @@ jobs:
             --max_words_per_line 1 \
             --output_dir output
 
-      - name: ⬆️ Upload file kết quả (.mp3 và .srt)
+      - name: ⬆️ Upload file kết quả (.mp3 và .srt) có tên theo model và speed
         uses: actions/upload-artifact@v4
         with:
-          name: final-output
+          name: ${{ github.event.inputs.whisper_model }}_${{ github.event.inputs.speed }}x_output
           path: |
-            adjusted/adjusted.mp3
-            output/adjusted.srt
+            adjusted/adjusted_${{ github.event.inputs.speed }}x.mp3
+            output/${{ github.event.inputs.whisper_model }}_adjusted.srt
