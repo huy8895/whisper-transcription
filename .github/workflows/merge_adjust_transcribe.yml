@@ -35,12 +35,15 @@ jobs:
           echo "✅ Danh sách file:"
           ls -1 audio/*.mp3
 
-      - name: 🔗 Nối tất cả file .mp3 thành 1 file duy nhất
+      - name: 🔗 Nối tất cả file .mp3 theo thứ tự tên tăng dần
         run: |
           mkdir -p merged
-          for f in audio/*.mp3; do
+          ls audio/*.mp3 | sort > merged/sorted.txt
+          while read f; do
             echo "file '$PWD/$f'" >> merged/list.txt
-          done
+          done < merged/sorted.txt
+          echo "📃 Danh sách merge:"
+          cat merged/list.txt
           ffmpeg -f concat -safe 0 -i merged/list.txt -c copy merged/merged.mp3
 
       - name: "🐢 Điều chỉnh tốc độ audio (speed: ${{ github.event.inputs.speed }})"
