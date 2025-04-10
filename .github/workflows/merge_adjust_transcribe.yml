@@ -62,6 +62,10 @@ jobs:
             --word_timestamps True \
             --max_words_per_line 1 \
             --output_dir output
+      - name: 🏷️ Đổi tên file kết quả
+        run: |
+          cp adjusted/adjusted.mp3 audio_adjusted_${{ github.event.inputs.speed }}x.mp3
+          cp output/adjusted.srt transcript_${{ github.event.inputs.whisper_model }}.srt
 
       - name: ⬆️ Upload file kết quả (.mp3 và .srt) có tên theo model và speed
         uses: actions/upload-artifact@v4
