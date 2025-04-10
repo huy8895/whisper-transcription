@@ -10,7 +10,7 @@ on:
       speed:
         description: 'Tốc độ điều chỉnh audio (ví dụ: 0.8, 1.0, 1.2)'
         required: true
-        default: '1.0'
+        default: '0.8'
 
 jobs:
   merge-adjust-transcribe:
