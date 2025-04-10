@@ -38,7 +38,7 @@ jobs:
       - name: 🔗 Nối tất cả file .mp3 theo thứ tự tên tăng dần
         run: |
           mkdir -p merged
-          ls audio/*.mp3 | sort > merged/sorted.txt
+          ls audio/*.mp3 | sort -V > merged/sorted.txt
           while read f; do
             echo "file '$PWD/$f'" >> merged/list.txt
           done < merged/sorted.txt
