@@ -1,0 +1,42 @@
+name: Adjust Audio Speed
+
+on:
+  workflow_dispatch:
+    inputs:
+      input_filename:
+        description: 'Tên file .mp3 trong thư mục audio (ví dụ: lesson1.mp3)'
+        required: true
+      speed:
+        description: 'Tốc độ mong muốn (ví dụ: 0.8 = chậm hơn, 1.2 = nhanh hơn)'
+        required: true
+        default: '1.0'
+
+jobs:
+  adjust-speed:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 📦 Checkout source code
+        uses: actions/checkout@v3
+
+      - name: 🔍 Kiểm tra file đầu vào
+        run: |
+          ls -lh audio/
+          echo "🎧 Input file: audio/${{ github.event.inputs.input_filename }}"
+          echo "🚀 Speed factor: ${{ github.event.inputs.speed }}"
+
+      - name: 🛠️ Cài ffmpeg
+        run: sudo apt-get update && sudo apt-get install -y ffmpeg
+
+      - name: 🎛️ Chỉnh tốc độ file audio
+        run: |
+          mkdir -p adjusted
+          ffmpeg -i "audio/${{ github.event.inputs.input_filename }}" \
+            -filter:a "atempo=${{ github.event.inputs.speed }}" \
+            -vn "adjusted/adjusted_${{ github.event.inputs.speed }}x_${{ github.event.inputs.input_filename }}"
+
+      - name: ⬆️ Upload audio đã điều chỉnh
+        uses: actions/upload-artifact@v4
+        with:
+          name: adjusted-audio
+          path: adjusted/*.mp3
