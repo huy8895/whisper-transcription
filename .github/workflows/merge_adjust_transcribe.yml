@@ -30,8 +30,8 @@ jobs:
 
       - name: 📂 Giải nén file audio zip (chỉ lấy file từ ZIP)
         run: |
-          rm -rf audio
-          mkdir -p audio
+          rm -rf audio merged
+          mkdir -p audio merged
           unzip -o audio-uploads/audio-files.zip -d audio
           echo "✅ Danh sách file .mp3 sau giải nén:"
           find audio -maxdepth 1 -type f -name "*.mp3" | sort -V > merged/sorted.txt
