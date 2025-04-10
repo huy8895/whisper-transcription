@@ -1,0 +1,49 @@
+name: Transcribe Batch Audio Files (From ZIP)
+
+on:
+  workflow_dispatch:
+    inputs:
+      whisper_model:
+        description: 'Chọn model Whisper (tiny, small, medium, large)'
+        required: true
+        default: 'tiny'
+
+jobs:
+  batch-transcribe:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 📦 Checkout code & audio zip
+        uses: actions/checkout@v3
+
+      - name: 📂 Giải nén file audio zip
+        run: |
+          mkdir -p audio
+          unzip -o audio-uploads/audio-files.zip -d audio
+          ls -lh audio/
+
+      - name: 🛠️ Build Docker image từ Dockerfile trong repo
+        run: docker build -t whisper-local .
+
+      - name: 🎧 Chạy Whisper trên tất cả file mp3
+        run: |
+          echo "🎯 Using Whisper model: ${{ github.event.inputs.whisper_model }}"
+          for file in /home/runner/work/${{ github.event.repository.name }}/${{ github.event.repository.name }}/audio/*.mp3; do
+            echo "🔁 Transcribing: $file"
+            docker run --rm \
+              -v ${{ github.workspace }}/audio:/workspace \
+              whisper-local \
+              whisper "/workspace/$(basename "$file")" \
+                --language en \
+                --model ${{ github.event.inputs.whisper_model }} \
+                --output_format srt \
+                --word_timestamps True \
+                --max_words_per_line 1 \
+                --output_dir /workspace
+          done
+
+      - name: ⬆️ Upload toàn bộ file SRT
+        uses: actions/upload-artifact@v4
+        with:
+          name: all-srt-files
+          path: audio/*.srt
