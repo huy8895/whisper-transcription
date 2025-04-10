@@ -1,0 +1,67 @@
+name: Merge, Adjust Speed, and Transcribe MP3
+
+on:
+  workflow_dispatch:
+    inputs:
+      whisper_model:
+        description: 'Model Whisper (tiny, small, medium, large)'
+        required: true
+        default: 'tiny'
+      speed:
+        description: 'Tốc độ điều chỉnh audio (ví dụ: 0.8, 1.0, 1.2)'
+        required: true
+        default: '1.0'
+
+jobs:
+  merge-adjust-transcribe:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 📦 Checkout source code
+        uses: actions/checkout@v3
+
+      - name: 🛠️ Cài đặt ffmpeg và whisper
+        run: |
+          sudo apt update
+          sudo apt install -y ffmpeg
+          pip install --upgrade pip
+          pip install setuptools-rust
+          pip install openai-whisper
+
+      - name: 📂 Giải nén file audio zip
+        run: |
+          mkdir -p audio
+          unzip -o audio-uploads/audio-files.zip -d audio
+          echo "✅ Danh sách file:"
+          ls -1 audio/*.mp3
+
+      - name: 🔗 Nối tất cả file .mp3 thành 1 file duy nhất
+        run: |
+          mkdir -p merged
+          for f in audio/*.mp3; do
+            echo "file '$PWD/$f'" >> merged/list.txt
+          done
+          ffmpeg -f concat -safe 0 -i merged/list.txt -c copy merged/merged.mp3
+
+      - name: "🐢 Điều chỉnh tốc độ audio (speed: ${{ github.event.inputs.speed }})"
+        run: |
+          mkdir -p adjusted
+          ffmpeg -i merged/merged.mp3 -filter:a "atempo=${{ github.event.inputs.speed }}" -vn adjusted/adjusted.mp3
+
+      - name: ✍️ Chuyển thành phụ đề SRT bằng Whisper
+        run: |
+          whisper adjusted/adjusted.mp3 \
+            --language en \
+            --model ${{ github.event.inputs.whisper_model }} \
+            --output_format srt \
+            --word_timestamps True \
+            --max_words_per_line 1 \
+            --output_dir output
+
+      - name: ⬆️ Upload file kết quả (.mp3 và .srt)
+        uses: actions/upload-artifact@v4
+        with:
+          name: final-output
+          path: |
+            adjusted/adjusted.mp3
+            output/adjusted.srt
