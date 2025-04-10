@@ -65,5 +65,5 @@ jobs:
         with:
           name: ${{ github.event.inputs.whisper_model }}_${{ github.event.inputs.speed }}x_output
           path: |
-            adjusted/adjusted_${{ github.event.inputs.speed }}x.mp3
-            output/${{ github.event.inputs.whisper_model }}_adjusted.srt
+            audio_adjusted_${{ github.event.inputs.speed }}x.mp3
+            transcript_${{ github.event.inputs.whisper_model }}.srt
