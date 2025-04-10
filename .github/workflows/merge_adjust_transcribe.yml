@@ -28,12 +28,14 @@ jobs:
           pip install setuptools-rust
           pip install openai-whisper
 
-      - name: 📂 Giải nén file audio zip
+      - name: 📂 Giải nén file audio zip (chỉ lấy file từ ZIP)
         run: |
+          rm -rf audio
           mkdir -p audio
           unzip -o audio-uploads/audio-files.zip -d audio
-          echo "✅ Danh sách file:"
-          ls -1 audio/*.mp3
+          echo "✅ Danh sách file .mp3 sau giải nén:"
+          find audio -maxdepth 1 -type f -name "*.mp3" | sort -V > merged/sorted.txt
+          cat merged/sorted.txt
 
       - name: 🔗 Nối tất cả file .mp3 theo thứ tự tên tăng dần
         run: |
