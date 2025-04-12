@@ -11,9 +11,18 @@ on:
         description: 'Tốc độ điều chỉnh audio (ví dụ: 0.8, 1.0, 1.2)'
         required: true
         default: '0.8'
+      max_words_per_line:
+        description: 'Số từ tối đa mỗi dòng phụ đề (ví dụ: 1, 5, 8)'
+        required: true
+        default: '1'
+      language:
+        description: 'Ngôn ngữ của file audio (en, vi, es, etc.)'
+        required: true
+        default: 'en'
 
 jobs:
   merge-adjust-transcribe:
+    name: "🎧 Whisper: ${{ github.event.inputs.whisper_model }}, 🐢 Speed: ${{ github.event.inputs.speed }}, 🌍 Language: ${{ github.event.inputs.language }}"
     runs-on: ubuntu-latest
 
     steps:
@@ -57,13 +66,16 @@ jobs:
         run: |
           echo "🧠 Whisper model: ${{ github.event.inputs.whisper_model }}"
           echo "🐢 Audio speed: ${{ github.event.inputs.speed }}"
+          echo "🗣️ Language: ${{ github.event.inputs.language }}"
+          echo "🧾 Max words/line: ${{ github.event.inputs.max_words_per_line }}"
           whisper adjusted/adjusted.mp3 \
-            --language en \
+            --language ${{ github.event.inputs.language }} \
             --model ${{ github.event.inputs.whisper_model }} \
             --output_format srt \
             --word_timestamps True \
-            --max_words_per_line 1 \
+            --max_words_per_line ${{ github.event.inputs.max_words_per_line }} \
             --output_dir output
+
       - name: 🏷️ Đổi tên file kết quả
         run: |
           cp adjusted/adjusted.mp3 audio_adjusted_${{ github.event.inputs.speed }}x.mp3
@@ -72,7 +84,7 @@ jobs:
       - name: ⬆️ Upload file kết quả (.mp3 và .srt) có tên theo model và speed
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ github.event.inputs.whisper_model }}_${{ github.event.inputs.speed }}x_output
+          name: ${{ github.event.inputs.whisper_model }}_${{ github.event.inputs.speed }}x_${{ github.event.inputs.language }}
           path: |
             audio_adjusted_${{ github.event.inputs.speed }}x.mp3
             transcript_${{ github.event.inputs.whisper_model }}.srt
