@@ -2,6 +2,11 @@ name: Generate High-Res Slides from JSON
 
 on:
   workflow_dispatch:
+    inputs:
+      dpi:
+        description: "DPI for PNG output (e.g. 150, 200, 300, 600)"
+        required: false
+        default: "96"
 
 jobs:
   create-slides:
@@ -40,10 +45,10 @@ jobs:
           echo "✅ Converted to PDF:"
           ls slides_pdf/
 
-      - name: 🖼️ Convert PDF to high-res PNG (300 DPI)
+      - name: 🖼️ Convert PDF to high-res PNG using DPI=${{ inputs.dpi }}
         run: |
           mkdir -p slides_png
-          pdftoppm -png -r 300 slides_pdf/slides.pdf slides_png/slide
+          pdftoppm -png -r ${{ inputs.dpi }} slides_pdf/slides.pdf slides_png/slide
 
       - name: 🗜️ Zip all PNG slides
         run: zip -r slides_png.zip slides_png
