@@ -88,7 +88,7 @@ jobs:
           echo "✅ Using resolution: $SIZE"
 
           ffmpeg -y -f concat -safe 0 -i input.txt -i audio.mp3 \
-            -vf "format=yuv420p" \
+            -vf "scale=$SIZE,format=yuv420p" \
             -c:v libx264 -preset slow -crf 18 \
             -c:a aac -b:a 320k \
             -shortest output.mp4
