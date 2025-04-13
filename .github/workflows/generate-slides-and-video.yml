@@ -4,9 +4,13 @@ on:
   workflow_dispatch:
     inputs:
       dpi:
-        description: "DPI for PNG output (e.g. 150, 200, 300, 600)"
+        description: >
+          DPI for PNG output.
+          Use 96 for 480p, 128 for 720p, 192 for 1080p. 
+          (Higher DPI = larger image size = sharper video)
         required: false
-        default: "96"
+        default: "192"
+
       resolution:
         description: "Video resolution: 480p (default), 720p, 1080p"
         required: false
