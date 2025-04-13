@@ -22,9 +22,10 @@ jobs:
 
       - name: 📦 Unzip input files (audio.mp3, timings.json, content.txt)
         run: |
-          unzip input_data.zip
+          unzip -o input_data.zip
           echo "✅ Unzipped input files:"
           ls -lh
+
 
       - name: 🛠️ Setup Node.js
         uses: actions/setup-node@v4
