@@ -1,0 +1,68 @@
+name: Build Video with FFmpeg
+
+on:
+  workflow_dispatch:
+    inputs:
+      resolution:
+        description: "480p (mặc định) | 720p | 1080p"
+        required: false
+        default: "480p"
+
+jobs:
+  build-video:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 📥 Checkout source
+        uses: actions/checkout@v4
+
+      # ---------- Logging workspace ----------
+      - name: 📂 List workspace contents
+        run: |
+          echo "=== Workspace tree (max depth 2) ==="
+          find . -maxdepth 2 -type f
+
+      - name: 🛠️ Install FFmpeg
+        run: sudo apt-get update && sudo apt-get install -y ffmpeg
+
+      # ---------- Show FFmpeg version ----------
+      - name: 🎦 FFmpeg version
+        run: ffmpeg -version | head -n 1
+
+      - name: ⚙️ Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: 📝 Generate input.txt from timings.json
+        run: node scripts/build_input_list.js
+
+      # ---------- Preview input.txt ----------
+      - name: 📄 Show first 20 lines of input.txt
+        run: |
+          echo "=== Preview input.txt ==="
+          head -n 20 input.txt
+
+      - name: 🎬 Build video with FFmpeg
+        run: |
+          case "${{ github.event.inputs.resolution }}" in
+            "720p")  SIZE="1280:720" ;;
+            "1080p") SIZE="1920:1080" ;;
+            *)       SIZE="854:480" ;;   # 480p mặc định
+          esac
+
+          ffmpeg -y -f concat -safe 0 -i input.txt -i audio.mp3 \
+            -vf "scale=$SIZE,format=yuv420p" \
+            -c:v libx264 -preset veryfast -crf 23 \
+            -c:a aac -b:a 192k \
+            -shortest output.mp4
+
+      # ---------- Show output size ----------
+      - name: 📏 Video file size
+        run: du -h output.mp4
+
+      - name: 📤 Upload artifact (video)
+        uses: actions/upload-artifact@v4
+        with:
+          name: rendered-video
+          path: output.mp4
