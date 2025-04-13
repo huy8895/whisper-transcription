@@ -3,7 +3,7 @@ const fs   = require('fs');
 const path = require('path');
 
 const timingFile = process.env.TIMING_FILE || 'timings.json';
-const imagesDir  = process.env.IMAGES_DIR  || 'images';
+const imagesDir  = process.env.IMAGES_DIR  || 'slides_png';
 const outputList = process.env.OUTPUT_LIST || 'input.txt';
 
 const timings = JSON.parse(fs.readFileSync(timingFile, 'utf8'));
