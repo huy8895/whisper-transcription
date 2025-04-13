@@ -92,6 +92,9 @@ jobs:
       - name: 🖼️ Preview converted slide images
         run: ls -lh slides_png | head
 
+      - name: 📝 Generate input.txt from timings.json
+        run: IMAGES_DIR=slides_png node scripts/build_input_list.js
+
       - name: 📄 Show first 20 lines of input.txt
         run: |
           echo "=== Preview input.txt ==="
