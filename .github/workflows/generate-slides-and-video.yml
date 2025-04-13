@@ -66,6 +66,11 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y libreoffice poppler-utils ffmpeg
 
+      - name: 📜 Generate PPTX from timings.json
+        env:
+          CONFIG_KEY: ${{ github.event.inputs.config_key }}
+        run: node scripts/gen_slides.js
+
       - name: 📄 Convert PPTX to PDF
         run: |
           mkdir -p slides_pdf
@@ -86,11 +91,6 @@ jobs:
 
       - name: 🖼️ Preview converted slide images
         run: ls -lh slides_png | head
-
-      - name: 📜 Generate PPTX from timings.json
-        env:
-          CONFIG_KEY: ${{ github.event.inputs.config_key }}
-        run: node scripts/gen_slides.js
 
       - name: 📄 Show first 20 lines of input.txt
         run: |
