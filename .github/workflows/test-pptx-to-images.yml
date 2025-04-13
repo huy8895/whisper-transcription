@@ -1,56 +1,79 @@
-name: Test PPTX to Images
+name: Generate Slides from JSON
 
 on:
   workflow_dispatch:
 
 jobs:
-  generate-slides:
+  create-slides:
     runs-on: ubuntu-latest
+
     steps:
-      - name: Checkout repository
+      - name: 📥 Checkout repository
         uses: actions/checkout@v4
 
-      - name: Setup Node.js environment
+      - name: 🛠️ Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: 20
 
-      - name: Install pptxgenjs dependency
-        run: npm install pptxgenjs
+      - name: 📦 Install dependencies
+        run: |
+          npm install pptxgenjs
 
-      - name: Generate PPTX slides
+      - name: 📜 Create PPTX from JSON
         run: |
           cat << 'EOF' > gen_slides.js
           const PPTXGenJS = require("pptxgenjs");
-          let pptx = new PPTXGenJS();
-          let slide = pptx.addSlide();
-          slide.addText("Hello, world!", { x: 1, y: 1, fontSize: 24, color: "363636" });
-          pptx.writeFile({ fileName: "slides.pptx" }).then(() => {
-            console.log("slides.pptx generated");
-          }).catch(err => {
-            console.error(err);
-            process.exit(1);
+          const fs = require("fs");
+
+          const slideData = JSON.parse(fs.readFileSync("timings.json", "utf8"));
+          const pptx = new PPTXGenJS();
+
+          // Set slide size to 1920x1080 pixels
+          pptx.defineLayout({ name: "WIDESCREEN_HD", width: 10, height: 5.625 }); // inches
+          pptx.layout = "WIDESCREEN_HD";
+
+          const bgPath = "assets/bg.jpg";
+
+          slideData.forEach((item) => {
+            const slide = pptx.addSlide();
+            slide.background = { path: bgPath };
+            slide.addText(item.text, {
+              x: 0.5, y: 0.5, w: 9, h: 4.5,
+              fontSize: 38,
+              color: "404040",
+              fontFace: "Crimson Pro",
+              align: "justify",
+              valign: "top",
+              wrap: true,
+            });
           });
+
+          pptx.writeFile({ fileName: "slides.pptx" })
+            .then(() => console.log("✅ Created slides.pptx"))
+            .catch((err) => {
+              console.error("❌ Error:", err);
+              process.exit(1);
+            });
           EOF
+
           node gen_slides.js
 
-      - name: Install LibreOffice
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y libreoffice
+      - name: 🖼️ Install LibreOffice
+        run: sudo apt-get update && sudo apt-get install -y libreoffice
 
-      - name: Convert PPTX to PNG images
+      - name: 🖼️ Convert PPTX to PNG
         run: |
           mkdir -p slides_png
           soffice --headless --convert-to png --outdir slides_png slides.pptx
-          echo "Converted PPTX to PNG images:"
+          echo "✅ Converted slides:"
           ls slides_png/
 
-      - name: Zip PNG images
+      - name: 🗜️ Zip PNG images
         run: zip -r slides_png.zip slides_png
 
-      - name: Upload ZIP artifact
+      - name: 📤 Upload artifact (ZIP)
         uses: actions/upload-artifact@v4
         with:
-          name: slides_images_zip
+          name: slides_images
           path: slides_png.zip
