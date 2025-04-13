@@ -7,6 +7,10 @@ on:
         description: 'Model Whisper (tiny, small, medium, large)'
         required: true
         default: 'tiny'
+      video_number:
+        description: 'Số Thứ tự video (1, 2, 3, ...)'
+        required: true
+        default: '0'
       speed:
         description: 'Tốc độ điều chỉnh audio (ví dụ: 0.8, 1.0, 1.2)'
         required: true
@@ -22,7 +26,7 @@ on:
 
 jobs:
   merge-adjust-transcribe:
-    name: "🎧 Whisper: ${{ github.event.inputs.whisper_model }} | 🐢 Speed: ${{ github.event.inputs.speed }} | 🌍 Language: ${{ github.event.inputs.language }}"
+    name: "Video: #${{ github.event.inputs.video_number }} | 🎧 Whisper: ${{ github.event.inputs.whisper_model }} | 🐢 Speed: ${{ github.event.inputs.speed }} | 🌍 Language: ${{ github.event.inputs.language }}"
     runs-on: ubuntu-latest
 
     steps:
