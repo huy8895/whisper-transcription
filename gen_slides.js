@@ -29,7 +29,11 @@ const htmlTemplate = (text) => `
 </html>`;
 
 (async () => {
-    const browser = await puppeteer.launch();
+    // ✅ Add "--no-sandbox" here
+    const browser = await puppeteer.launch({
+        args: ['--no-sandbox', '--disable-setuid-sandbox']
+    });
+
     const page = await browser.newPage();
     await page.setViewport({ width: 1920, height: 1080 });
 
