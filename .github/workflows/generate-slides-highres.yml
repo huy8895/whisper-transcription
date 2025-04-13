@@ -1,0 +1,61 @@
+name: Generate High-Res Slides from JSON
+
+on:
+  workflow_dispatch:
+
+jobs:
+  create-slides:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 📥 Checkout repository
+        uses: actions/checkout@v4
+
+      - name: 🛠️ Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: 📦 Install Node dependencies
+        run: npm install pptxgenjs
+
+      - name: 📜 Generate PPTX from timings.json
+        run: node scripts/gen_slides.js
+
+      - name: 🆕 Install Crimson Pro font
+        run: |
+          mkdir -p ~/.fonts
+          cp assets/fonts/*.ttf ~/.fonts/
+          fc-cache -f -v
+
+      - name: 🖼️ Install LibreOffice & PDF tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libreoffice poppler-utils
+
+      - name: 📄 Convert PPTX to PDF
+        run: |
+          mkdir -p slides_pdf
+          soffice --headless --convert-to pdf --outdir slides_pdf slides.pptx
+          echo "✅ Converted to PDF:"
+          ls slides_pdf/
+
+      - name: 🖼️ Convert PDF to high-res PNG (300 DPI)
+        run: |
+          mkdir -p slides_png
+          pdftoppm -png -r 300 slides_pdf/slides.pdf slides_png/slide
+
+      - name: 🗜️ Zip all PNG slides
+        run: zip -r slides_png.zip slides_png
+
+      - name: "📤 Upload artifact: PPTX file"
+        uses: actions/upload-artifact@v4
+        with:
+          name: slides_pptx
+          path: slides.pptx
+
+      - name: "📤 Upload artifact: PNG zip"
+        uses: actions/upload-artifact@v4
+        with:
+          name: slides_images_zip
+          path: slides_png.zip
