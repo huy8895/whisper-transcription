@@ -8,6 +8,7 @@ if (!configKey) {
     process.exit(1);
 }
 const config = JSON.parse(fs.readFileSync(`configs/${configKey}.json`, "utf8"));
+console.log("CONFIG:", config);
 const slideData = JSON.parse(fs.readFileSync("timings.json", "utf8"));
 
 const pptx = new PPTXGenJS();
