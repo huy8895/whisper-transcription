@@ -1,27 +1,23 @@
 const PPTXGenJS = require("pptxgenjs");
 const fs = require("fs");
 
+const configKey = process.env.CONFIG_KEY;
+console.log("CONFIG_KEY:", configKey);
+if (!configKey) {
+    console.error("❌ CONFIG_KEY not set");
+    process.exit(1);
+}
+const config = JSON.parse(fs.readFileSync(`configs/${configKey}.json`, "utf8"));
 const slideData = JSON.parse(fs.readFileSync("timings.json", "utf8"));
-const pptx = new PPTXGenJS();
 
-// Set slide size to 1920x1080 pixels (10 x 5.625 inches)
+const pptx = new PPTXGenJS();
 pptx.defineLayout({ name: "WIDESCREEN_HD", width: 10, height: 5.625 });
 pptx.layout = "WIDESCREEN_HD";
 
-const bgPath = "assets/bg.jpg";
-
 slideData.forEach((item) => {
     const slide = pptx.addSlide();
-    slide.background = { path: bgPath };
-    slide.addText(item.text, {
-        x: 0.5, y: 0.5, w: 9, h: 4.5,
-        fontSize: 38,
-        color: "404040",
-        fontFace: "Crimson Pro",
-        align: "justify",
-        valign: "top",
-        wrap: true,
-    });
+    slide.background = { path: config.background };
+    slide.addText(item.text, config.textOptions);
 });
 
 pptx.writeFile({ fileName: "slides.pptx" })

@@ -20,6 +20,11 @@ on:
         description: "Upload the video to YouTube after rendering?"
         required: false
         default: "false"
+      config_key:
+        description: "Which slide config to use (e.g. onyxShadowingEnglish)"
+        required: true
+        default: "onyxShadowingEnglish"
+
 
 
 jobs:
@@ -79,8 +84,10 @@ jobs:
       - name: 🖼️ Preview converted slide images
         run: ls -lh slides_png | head
 
-      - name: 📝 Generate input.txt from timings.json
-        run: IMAGES_DIR=slides_png node scripts/build_input_list.js
+      - name: 📜 Generate PPTX from timings.json
+        env:
+          CONFIG_KEY: ${{ github.event.inputs.config_key }}
+        run: node scripts/gen_slides.js
 
       - name: 📄 Show first 20 lines of input.txt
         run: |
