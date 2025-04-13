@@ -8,3 +8,5 @@
 ```shell
 zip input_data.zip audio.mp3 timings.json content.txt
 ```
+
+[link-repo](https://github.com/huy8895/whisper-transcription.git) 
