@@ -117,3 +117,14 @@ jobs:
         with:
           name: rendered-video
           path: output.mp4
+
+      - name: 🐍 Install YouTube upload dependencies
+        run: pip install --upgrade google-api-python-client google-auth google-auth-oauthlib
+
+      - name: 🚀 Upload video to YouTube (unlisted)
+        env:
+          YT_REFRESH_TOKEN: ${{ secrets.YT_REFRESH_TOKEN }}
+          YT_CLIENT_ID: ${{ secrets.YT_CLIENT_ID }}
+          YT_CLIENT_SECRET: ${{ secrets.YT_CLIENT_SECRET }}
+        run: python scripts/upload_youtube.py
+
