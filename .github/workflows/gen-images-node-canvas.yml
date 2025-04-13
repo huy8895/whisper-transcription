@@ -1,0 +1,82 @@
+name: Generate PNG slides using node-canvas
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build-images:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 📥 Checkout
+        uses: actions/checkout@v4
+
+      - name: 🛠️ Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: 📦 Install dependencies
+        run: |
+          npm install canvas
+
+      - name: 📜 Generate PNG slides from JSON using canvas
+        run: |
+          mkdir -p slides_img
+          cat << 'EOF' > gen_images.js
+          const { createCanvas, loadImage } = require("canvas");
+          const fs = require("fs");
+          const slides = JSON.parse(fs.readFileSync("slides.json", "utf8"));
+          const WIDTH = 1920, HEIGHT = 1080;
+
+          async function createSlide(text, index) {
+            const canvas = createCanvas(WIDTH, HEIGHT);
+            const ctx = canvas.getContext("2d");
+
+            const bg = await loadImage("assets/bg.jpg");
+            ctx.drawImage(bg, 0, 0, WIDTH, HEIGHT);
+
+            ctx.fillStyle = "#404040";
+            ctx.font = "38px serif";
+            ctx.textAlign = "justify";
+            ctx.textBaseline = "top";
+
+            const words = text.split(" ");
+            let line = "", y = 80;
+
+            for (let i = 0; i < words.length; i++) {
+              const testLine = line + words[i] + " ";
+              const metrics = ctx.measureText(testLine);
+              if (metrics.width > WIDTH - 200) {
+                ctx.fillText(line, WIDTH / 2, y);
+                line = words[i] + " ";
+                y += 60;
+              } else {
+                line = testLine;
+              }
+            }
+            ctx.fillText(line, WIDTH / 2, y);
+
+            const out = fs.createWriteStream(\`slides_img/slide_\${index + 1}.png\`);
+            const stream = canvas.createPNGStream();
+            stream.pipe(out);
+          }
+
+          async function run() {
+            for (let i = 0; i < slides.length; i++) {
+              await createSlide(slides[i].text, i);
+              console.log(\`✅ Slide \${i + 1} done\`);
+            }
+          }
+          run();
+          EOF
+          node gen_images.js
+
+      - name: 🗜️ Zip all PNGs
+        run: zip -r slides_canvas.zip slides_img
+
+      - name: 📤 Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: slides_canvas
+          path: slides_canvas.zip
