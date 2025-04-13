@@ -25,6 +25,11 @@ on:
         required: true
         default: "onyxShadowingEnglish"
 
+      build_video:
+        description: "Whether to render video from the slides"
+        required: false
+        default: "true"
+
 
 
 jobs:
@@ -59,6 +64,7 @@ jobs:
           fc-cache -f -v
 
       - name: 🖼️ Install LibreOffice, PDF tools, and FFmpeg
+        if: ${{ github.event.inputs.build_video == 'true' }}
         run: |
           sudo apt-get update
           sudo apt-get install -y libreoffice poppler-utils ffmpeg
@@ -135,7 +141,7 @@ jobs:
         run: pip install --upgrade google-api-python-client google-auth google-auth-oauthlib
 
       - name: 🚀 Upload video to YouTube (unlisted)
-        if: ${{ github.event.inputs.upload_to_youtube == 'true' }}
+        if: ${{ github.event.inputs.upload_to_youtube == 'true' && github.event.inputs.build_video == 'true' }}
         env:
           YT_REFRESH_TOKEN: ${{ secrets.YT_REFRESH_TOKEN }}
           YT_CLIENT_ID: ${{ secrets.YT_CLIENT_ID }}
