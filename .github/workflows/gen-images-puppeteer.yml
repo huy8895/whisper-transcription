@@ -8,7 +8,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: 📥 Checkout
+      - name: 📥 Checkout repository
         uses: actions/checkout@v4
 
       - name: 🛠️ Setup Node.js
@@ -17,19 +17,18 @@ jobs:
           node-version: 20
 
       - name: 📦 Install dependencies
-        run: |
-          npm install puppeteer fs-extra
+        run: npm install puppeteer fs-extra
 
-      - name: 📜 Run Puppeteer to generate PNG slides
+      - name: 📜 Generate PNG from JSON using Puppeteer
         run: |
           mkdir -p slides_img slides_html
-          node gen_slides.js
+          node scripts/gen_images_puppeteer.js
 
       - name: 🗜️ Zip all PNGs
         run: zip -r slides_puppeteer.zip slides_img
 
-      - name: 📤 Upload artifact
+      - name: "📤 Upload artifact: PNG ZIP"
         uses: actions/upload-artifact@v4
         with:
-          name: slides_puppeteer
+          name: slides_images_zip
           path: slides_puppeteer.zip
