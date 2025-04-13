@@ -4,7 +4,7 @@ const fs = require("fs");
 const slideData = JSON.parse(fs.readFileSync("timings.json", "utf8"));
 const pptx = new PPTXGenJS();
 
-// Set slide size to 1920x1080 pixels = 10in × 5.625in
+// Set slide size to 1920x1080 pixels (10 x 5.625 inches)
 pptx.defineLayout({ name: "WIDESCREEN_HD", width: 10, height: 5.625 });
 pptx.layout = "WIDESCREEN_HD";
 

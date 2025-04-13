@@ -1,4 +1,4 @@
-name: Generate Slides from JSON (test-pptx-to-images.yml)
+name: Generate Slides from JSON
 
 on:
   workflow_dispatch:
@@ -16,23 +16,35 @@ jobs:
         with:
           node-version: 20
 
-      - name: 📦 Install dependencies
+      - name: 📦 Install Node dependencies
         run: npm install pptxgenjs
 
       - name: 📜 Generate PPTX from timings.json
         run: node scripts/gen_slides.js
 
-      - name: 🖼️ Install LibreOffice for PNG export
-        run: sudo apt-get update && sudo apt-get install -y libreoffice
-
-      - name: 🖼️ Convert PPTX to PNG
+      - name: 🆕 Install Crimson Pro font
         run: |
-          mkdir -p slides_png
-          soffice --headless --convert-to png --outdir slides_png slides.pptx
-          echo "✅ Converted slides:"
-          ls slides_png/
+          mkdir -p ~/.fonts
+          cp assets/fonts/*.ttf ~/.fonts/
+          fc-cache -f -v
 
-      - name: 🗜️ Zip PNG images
+      - name: 🖼️ Install LibreOffice & ImageMagick
+        run: sudo apt-get update && sudo apt-get install -y libreoffice imagemagick
+
+      - name: 🖼️ Convert PPTX to PNG (1920x1080)
+        run: |
+          mkdir -p slides_png_raw slides_png
+          soffice --headless --convert-to png --outdir slides_png_raw slides.pptx
+          echo "✅ All exported:"
+          ls slides_png_raw/
+
+          i=1
+          for img in slides_png_raw/*.png; do
+            convert "$img" -resize 1920x1080\! "slides_png/slide_$i.png"
+            i=$((i + 1))
+          done
+
+      - name: 🗜️ Zip all PNG slides
         run: zip -r slides_png.zip slides_png
 
       - name: "📤 Upload artifact: PPTX file"
@@ -41,14 +53,14 @@ jobs:
           name: slides_pptx
           path: slides.pptx
 
-      - name: "📤 Upload artifact: PNG ZIP"
-        uses: actions/upload-artifact@v4
-        with:
-          name: slides_images_zip
-          path: slides_png.zip
-
-      - name: "📤 Upload artifact: PNG folder (optional)"
+      - name: "📤 Upload artifact: PNG folder"
         uses: actions/upload-artifact@v4
         with:
           name: slides_images_folder
           path: slides_png/
+
+      - name: "📤 Upload artifact: PNG zip"
+        uses: actions/upload-artifact@v4
+        with:
+          name: slides_images_zip
+          path: slides_png.zip
