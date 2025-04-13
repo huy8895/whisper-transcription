@@ -16,6 +16,12 @@ on:
         required: false
         default: "480p"
 
+      upload_to_youtube:
+        description: "Upload the video to YouTube after rendering?"
+        required: false
+        default: "false"
+
+
 jobs:
   generate-slides-and-video:
     runs-on: ubuntu-latest
@@ -122,6 +128,7 @@ jobs:
         run: pip install --upgrade google-api-python-client google-auth google-auth-oauthlib
 
       - name: 🚀 Upload video to YouTube (unlisted)
+        if: ${{ github.event.inputs.upload_to_youtube == 'true' }}
         env:
           YT_REFRESH_TOKEN: ${{ secrets.YT_REFRESH_TOKEN }}
           YT_CLIENT_ID: ${{ secrets.YT_CLIENT_ID }}
