@@ -54,9 +54,6 @@ jobs:
       - name: 📦 Install Node dependencies
         run: npm install pptxgenjs
 
-      - name: 📜 Generate PPTX from timings.json
-        run: node scripts/gen_slides.js
-
       - name: 🆕 Install Crimson Pro font
         run: |
           mkdir -p ~/.fonts
