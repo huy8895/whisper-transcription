@@ -376,6 +376,9 @@ async function main() {
   console.log(`Content: ${contentPath}`);
   console.log(`Max char: ${maxChar}`);
   console.log(`Min char: ${minChar}`);
+  console.log(`matchThreshold: ${matchThreshold}`);
+  console.log(`maxOffset: ${maxOffset}`);
+
 
   console.log("📁 Reading files...");
   const srtContent = fs.readFileSync(srtPath, 'utf-8');
