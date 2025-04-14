@@ -1,4 +1,4 @@
-name: TEST Process Artifact After Transcribe
+name: Process Artifact After Transcribe
 
 on:
   workflow_run:
@@ -19,39 +19,15 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - name: 📥 Checkout source
+        uses: actions/checkout@v4
+
       - name: 📥 Download artifact
         uses: actions/github-script@v7
         with:
           script: |
-            const fs = require('fs');
-            let artifactId = "${{ github.event.inputs.artifact_id }}";
-
-            if (!artifactId) {
-              // Tự động lấy artifact mới nhất từ workflow_run
-              const artifacts = await github.rest.actions.listWorkflowRunArtifacts({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                run_id: ${{ github.event.workflow_run.id }},
-              });
-              if (artifacts.data.artifacts.length === 0) {
-                core.setFailed('Không tìm thấy artifact nào.');
-                return;
-              }
-              artifactId = artifacts.data.artifacts[0].id;
-              console.log("🟢 Tự động chọn Artifact ID:", artifactId);
-            } else {
-              console.log("🔵 Artifact ID được nhập thủ công:", artifactId);
-            }
-
-            const download = await github.rest.actions.downloadArtifact({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              artifact_id: artifactId,
-              archive_format: 'zip',
-            });
-
-            fs.writeFileSync('artifact.zip', Buffer.from(download.data));
-            console.log("✅ Artifact downloaded successfully!");
+            const downloadArtifact = require('./scripts/download_artifact');
+            await downloadArtifact({github, context, core}, "${{ github.event.inputs.artifact_id }}");
 
       - name: 📂 Unzip artifact
         run: |
@@ -61,6 +37,6 @@ jobs:
 
       - name: ⚙️ Process downloaded files
         run: |
-          echo "Xử lý các file audio và SRT ở đây..."
+          echo "Tiến hành xử lý file audio và SRT ở đây..."
           ls artifact_contents
-          # Thêm các bước xử lý tùy chỉnh vào đây
+          # thêm logic xử lý tùy chỉnh ở đây
