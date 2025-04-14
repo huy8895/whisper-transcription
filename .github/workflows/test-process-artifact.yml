@@ -24,10 +24,11 @@ on:
         description: 'Mức độ khớp tối thiểu (%)'
         required: false
         default: '90'
-      matchThreshold:
-        description: 'Mức độ khớp tối thiểu (%)'
+      maxOffset:
+        description: 'Số từ lệch tối đa khi so sánh khớp'
         required: false
-        default: '90'
+        default: '3'
+
 jobs:
   process-artifact:
     if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
@@ -66,7 +67,8 @@ jobs:
             --content video/content.txt \
             --maxChar "${{ github.event.inputs.maxChar || 200 }}" \
             --minChar "${{ github.event.inputs.minChar || 100 }}" \
-            --matchThreshold "${{ github.event.inputs.matchThreshold || 90 }}"
+            --matchThreshold "${{ github.event.inputs.matchThreshold || 90 }}" \
+            --maxOffset "${{ github.event.inputs.maxOffset || 3 }}"
 
       - name: 📦 Prepare files and zip for next workflow
         run: |
