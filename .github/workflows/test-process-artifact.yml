@@ -45,12 +45,14 @@ jobs:
 
 
       - name: ⚙️ Run generate timing script
-        run: node scripts/generate_timing_json_with_parser.js \
-          --srt artifact_contents/*.srt \
-          --content video/content.txt \
-          --maxChar 200 \
-          --minChar 100 \
-          --matchThreshold 90
+        run: |
+          SRT=$(find artifact_contents -name "*.srt" | head -n 1)
+          node scripts/generate_timing_json_with_parser.js \
+            --srt "$SRT" \
+            --content video/content.txt \
+            --maxChar 200 \
+            --minChar 100 \
+            --matchThreshold 90
 
       - name: 📦 Prepare files and zip for next workflow
         run: |
