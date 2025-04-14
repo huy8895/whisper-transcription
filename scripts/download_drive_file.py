@@ -31,3 +31,5 @@ while not done:
     print(f"Download {int(status.progress() * 100)}% complete.")
 
 print(f"✅ File downloaded and saved as {file_name}")
+print(f"📁 File saved: {os.path.abspath(file_name)}")
+
