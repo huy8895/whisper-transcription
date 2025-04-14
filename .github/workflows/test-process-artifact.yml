@@ -41,11 +41,11 @@ jobs:
           node-version: '20'
 
       - name: 📦 Install dependencies
-        run: |
-          npm install compromise subtitle-parser fs-extra
+        run: npm install fs-extra compromise minimist
+
 
       - name: ⚙️ Run generate timing script
-        run: node scripts/generate_timing_json.js \
+        run: node scripts/generate_timing_json_with_parser.js \
           --srt artifact_contents/*.srt \
           --content video/content.txt \
           --maxChar 200 \

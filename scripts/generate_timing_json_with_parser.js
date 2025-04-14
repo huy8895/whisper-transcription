@@ -1,16 +1,39 @@
-
-// generate_timing_json.js (verbose version with logs)
+// generate_timing_json_with_parser.js
 const fs = require('fs-extra');
 const nlp = require('compromise');
-const { parseSRT } = require('subtitle-parser');
 const minimist = require('minimist');
 
-function logSlide(index, slide, matchPercent) {
-    console.log(`\n[Slide #${index}]`);
-    console.log(`Text: ${slide}`);
-    console.log(`Match: ${matchPercent}%`);
+// ===== Subtitle Parser (From subtitle-parser.js) =====
+function timeToMs(timeString) {
+    const [hours, minutes, rest] = timeString.split(':');
+    const [seconds, millis] = rest.split(',');
+    return (
+        parseInt(hours) * 3600000 +
+        parseInt(minutes) * 60000 +
+        parseInt(seconds) * 1000 +
+        parseInt(millis)
+    );
 }
 
+function parseSRT(data) {
+    const srt = data.replace(/\r/g, '');
+    const regex = /(\d+)\n(\d{2}:\d{2}:\d{2},\d{3}) --> (\d{2}:\d{2}:\d{2},\d{3})\n([\s\S]*?)(?=\n{2}|$)/g;
+    const result = [];
+
+    let match;
+    while ((match = regex.exec(srt)) !== null) {
+        const id = parseInt(match[1]);
+        const start = timeToMs(match[2]);
+        const end = timeToMs(match[3]);
+        const text = match[4].replace(/\n/g, ' ').trim();
+
+        result.push({ id, start, end, text });
+    }
+
+    return result;
+}
+
+// ===== Helper Functions =====
 function normalizeText(text) {
     text = text.toLowerCase();
     let words = text.split(/\s+|-|—/);
@@ -72,7 +95,9 @@ function generateTimings(srtData,slides,matchThreshold=90,maxOffset=3) {
         const slideSplit=normalizeText(slide).split(' ');
         const arraySrtSplit=availableSrtData.slice(0,slideSplit.length).map(s=>normalizeText(s.text));
         const equalWithPercentage=fuzzyMatchAverage(arraySrtSplit,slideSplit);
-        logSlide(indexSlide + 1, slide, equalWithPercentage);
+        console.log(`\n[Slide #${indexSlide + 1}]`);
+        console.log(`Text: ${slide}`);
+        console.log(`Match: ${equalWithPercentage}%`);
         if(parseInt(equalWithPercentage)<matchThreshold){
             console.error("❌ Không đủ độ khớp!");
             throw Error('Slide không khớp đủ mức cho phép: '+equalWithPercentage+'%');
@@ -88,6 +113,7 @@ function generateTimings(srtData,slides,matchThreshold=90,maxOffset=3) {
     return timings;
 }
 
+// ===== Main Entry Point =====
 async function main() {
     const args = minimist(process.argv.slice(2));
     const srtPath = args.srt, contentPath = args.content;
