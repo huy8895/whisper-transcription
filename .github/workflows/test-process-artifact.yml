@@ -33,10 +33,35 @@ jobs:
         run: |
           unzip artifact.zip -d artifact_contents
           echo "✅ Files in artifact:"
-          ls -al artifact_contents
-
-      - name: ⚙️ Process downloaded files
-        run: |
-          echo "Tiến hành xử lý file audio và SRT ở đây..."
           ls artifact_contents
-          # thêm logic xử lý tùy chỉnh ở đây
+
+      - name: 🔧 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: 📦 Install dependencies
+        run: |
+          npm install compromise subtitle-parser fs-extra
+
+      - name: ⚙️ Run generate timing script
+        run: node scripts/generate_timing_json.js \
+          --srt artifact_contents/*.srt \
+          --content video/content.txt \
+          --maxChar 200 \
+          --minChar 100 \
+          --matchThreshold 90
+
+      - name: 📦 Prepare files and zip for next workflow
+        run: |
+          mkdir -p final_artifact
+          cp artifact_contents/*.mp3 final_artifact/audio.mp3
+          cp video/content.txt final_artifact/content.txt
+          cp slides-timing.json final_artifact/timing.json
+          zip -r final_package.zip final_artifact/
+
+      - name: ⬆️ Upload final package artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: final-package
+          path: final_package.zip
