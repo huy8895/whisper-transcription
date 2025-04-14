@@ -12,7 +12,22 @@ on:
         description: 'Artifact ID (để trống nếu chạy tự động)'
         required: false
         default: ''
-
+      maxChar:
+        description: 'Số ký tự tối đa mỗi slide'
+        required: false
+        default: '200'
+      minChar:
+        description: 'Số ký tự tối thiểu mỗi slide'
+        required: false
+        default: '100'
+      matchThreshold:
+        description: 'Mức độ khớp tối thiểu (%)'
+        required: false
+        default: '90'
+      matchThreshold:
+        description: 'Mức độ khớp tối thiểu (%)'
+        required: false
+        default: '90'
 jobs:
   process-artifact:
     if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
@@ -43,16 +58,15 @@ jobs:
       - name: 📦 Install dependencies
         run: npm install fs-extra compromise minimist
 
-
       - name: ⚙️ Run generate timing script
         run: |
           SRT=$(find artifact_contents -name "*.srt" | head -n 1)
           node scripts/generate_timing_json_with_parser.js \
             --srt "$SRT" \
             --content video/content.txt \
-            --maxChar 200 \
-            --minChar 100 \
-            --matchThreshold 90
+            --maxChar "${{ github.event.inputs.maxChar || 200 }}" \
+            --minChar "${{ github.event.inputs.minChar || 100 }}" \
+            --matchThreshold "${{ github.event.inputs.matchThreshold || 90 }}"
 
       - name: 📦 Prepare files and zip for next workflow
         run: |
